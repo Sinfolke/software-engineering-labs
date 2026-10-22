@@ -1,0 +1,24 @@
+@startsalt
+{
+  {+
+    <b>---Algorithm calculator v1.0---</b>
+    .. --main menu-- ..
+    0: Exit program
+    1: Calculate algorithm
+    2: File io settings
+    3: Step-by-step result
+    --
+    Your choice: [ 1 ]
+  }
+  |
+  {+
+    <b>---Algorithm calculator v1.0---</b>
+    .. --Input Your data-- ..
+    0: return back
+    1: Input from file
+    2: Input from console
+    --
+    Your choice: [ 2 ]
+  }
+}
+@enduml

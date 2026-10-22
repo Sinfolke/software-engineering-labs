@@ -1,0 +1,170 @@
+--- a/src/interface.cpp
++++ b/src/interface.cpp
+@@ -2,6 +2,7 @@
+ #include <cmath>
+ #include <fstream>
+ #include <iostream>
++#include <limits>
+ #include <array>
+ #include <charconv>
+ #include "global.h"
+@@ -127,6 +128,7 @@
+ auto account_choice() {
+     std::cout << "Your choice: ";
+     auto [choice, param] = parse_argument_list_input<2, std::string>();
++    if (!std::cin) return std::make_pair(0, std::string{});
+     int choice_int = -1;
+     const char* begin = choice.data();
+     const char* end = begin + choice.size();
+@@ -143,7 +145,7 @@
+     std::string dummy;
+     std::getline(std::cin, dummy);
+ }
+-auto input_from_file(const char* param) -> void {
++auto output_to_file(const char* param) -> void {
+     if (std::isnan(global::calc_result)) {
+         std::cout << "Calculate your result first" << std::endl;
+         wait();
+@@ -159,60 +161,24 @@
+     std::cout << "Your result is written successfully" << std::endl;
+     wait();
+ }
+-auto output_to_file(const char* param) -> void {
++auto read_input_file(const char* param) -> bool {
+     std::ifstream ifs(param);
+     if (!ifs) {
+         std::cout << "Could not read file " << param << '\n';
+         wait();
+-        return;
++        return false;
+     }
+     int x_start, x_end, step, n;
+     if (!(ifs >> x_start >> x_end >> step >> n)) {
+-        std::cout << "Invalid file format. Expected: "
+-                  << "x_start x_end step n\n";
+-        wait();
+-        return;
++        std::cout << "Invalid file format. Expected: x_start x_end step n\n";
++        wait();
++        return false;
+     }
+     if (step == 0 ||
+         (step > 0 && x_start > x_end) ||
+         (step < 0 && x_start < x_end) ||
+         n < 2) {
+-        std::cout << "Invalid parameter values\n";
+-        wait();
+-        return;
+-    }
+-    std::string extra;
+-    if (ifs >> extra) {
+-        std::cout << "Too many values in input file\n";
+-        wait();
+-        return;
+-    }
+-    global::x_start = x_start;
+-    global::x_end = x_end;
+-    global::step = step;
+-    global::n = n;
+-
+-    std::cout << "Parameters loaded successfully\n";
+-    wait();
+-}
+-auto read_input_file(const char* param) -> bool {
+-    std::ifstream ifs(param);
+-    if (!ifs) {
+-        std::cout << "Could not read file " << param << '\n';
+-        wait();
+-        return false;
+-    }
+-    int x_start, x_end, step, n;
+-    if (!(ifs >> x_start >> x_end >> step >> n)) {
+-        std::cout << "Invalid file format. Expected: x_start x_end step n\n";
+-        wait();
+-        return false;
+-    }
+-    if (step == 0 ||
+-        (step > 0 && x_start > x_end) ||
+-        (step < 0 && x_start < x_end) ||
+-        n < 2) {
+-        std::cout << "Invalid parameter values\n";
++        std::cout << "Invalid parameter values: step must be nonzero and point toward x_end; n must be at least 2\n";
+         wait();
+         return false;
+     }
+@@ -227,24 +193,6 @@
+     global::step = step;
+     global::n = n;
+     return true;
+-}
+-auto file_io() {
+-    while (true) {
+-        render("Algorithm calculator v1.0", "File input/output", {"Output to file ", "Read from file"});
+-        auto [choice, param] = account_choice();
+-        switch (choice) {
+-            case 0:
+-                return;
+-            case 1:
+-                input_from_file(param.c_str());
+-                break;
+-            case 2:
+-                output_to_file(param.c_str());
+-                break;
+-            default:
+-                std::cout << "Invalid choice" << std::endl;
+-        }
+-    }
+ }
+ auto take_input() -> bool {
+     while (std::cin) {
+@@ -254,8 +202,15 @@
+         case 0:
+             return false;
+         case 1:
+-            std::cout << "Enter file path: ";
+-            std::getline(std::cin >> std::ws, param);
++            if (param.empty()) {
++                std::cout << "Enter file path: ";
++                if (!std::getline(std::cin, param)) return false;
++            }
++            if (param.empty()) {
++                std::cout << "File path must not be empty\n";
++                wait();
++                break;
++            }
+             if (read_input_file(param.c_str())) {
+                 std::cout << "Parameters loaded successfully\n";
+                 wait();
+@@ -283,7 +238,7 @@
+         if (global::x_start == global::null || global::x_end == global::null || global::step == global::null || global::n == global::null) {
+             if (!take_input()) return;
+         }
+-        render("Algorithm calculator v1.0", "main menu", {"Calculate algorithm", "File io settings", "Step-by-step result"}, true);
++        render("Algorithm calculator v1.0", "main menu", {"Calculate algorithm", "Output to file", "Step-by-step result"}, true);
+         auto [choice, param] = account_choice();
+         switch (choice) {
+             case 0:
+@@ -310,7 +265,16 @@
+                 std::cout << "Calculated!" << std::endl;
+                 break;
+             } case 2:
+-                file_io();
++                if (param.empty()) {
++                    std::cout << "Enter output file path: ";
++                    if (!std::getline(std::cin, param)) return;
++                }
++                if (param.empty()) {
++                    std::cout << "File path must not be empty\n";
++                    wait();
++                    break;
++                }
++                output_to_file(param.c_str());
+                 break;
+             case 3: {
+                 std::size_t i = 1;
+--- a/input.txt
++++ b/input.txt
+@@ -1 +1 @@
+-1 4 0 15
+\ No newline at end of file
++1 4 1 15

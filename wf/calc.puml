@@ -1,0 +1,35 @@
+@startsalt
+{
+  {+
+    Input 'step' [Must not be zero]: [ 2 ]
+    Input 'n' [must be within range [2, ∞)]: [ 4 ]
+    Input 'x_start' [must be lower than x_end]: [ 0 ]
+    Input 'x_end' [must be higher than x_start]: [ 15 ]
+  }
+  |
+  {+
+    Your choice: 1
+    x: 0;  y: -0
+    x: 2;  y: 0
+    x: 4;  y: -0
+    x: 6;  y: 0
+    x: 8;  y: 3.93434e+16
+    x: 10; y: 2.74796e+20
+    x: 12; y: 1.71166e+23
+    x: 14; y: 2.96976e+25
+  }
+  |
+  {+
+    Your choice: 3
+    1: -0
+    2: 0
+    3: -0
+    4: 0
+    5: 3.93434e+16
+    6: 2.74796e+20
+    7: 1.71166e+23
+    8: 2.96976e+25
+    [enter to continue]
+  }
+}
+@enduml
