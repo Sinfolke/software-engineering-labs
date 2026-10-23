@@ -16,3 +16,9 @@ input values and for a range of values.
 3. Planning of System Activities
 4. Software Requirements Specification
 5. Testing of Code
+
+## Development process
+
+The project follows the Waterfall software development lifecycle.
+Development tasks are organized using GitHub milestones,
+epics, and subtasks.
