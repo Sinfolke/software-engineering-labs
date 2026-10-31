@@ -4,6 +4,13 @@
 #include <iostream>
 #include <array>
 #include <charconv>
+#include <cstdlib>
+#include <initializer_list>
+#include <limits>
+#include <string>
+#include <string_view>
+#include <type_traits>
+#include <utility>
 #include "global.h"
 #include "algorithm.h"
 // cross platform console clear
@@ -144,7 +151,7 @@ auto wait() -> void {
     std::getline(std::cin, dummy);
 }
 auto output_to_file(const char* param) -> bool {
-    if (std::isnan(global::calc_result)) {
+    if (std::isnan(global::calc_result) || global::results.empty()) {
         std::cout << "Calculate your result first" << std::endl;
         wait();
         return false;
@@ -155,46 +162,20 @@ auto output_to_file(const char* param) -> bool {
         wait();
         return false;
     }
-    of << global::calc_result;
-    std::cout << "Your result is written successfully" << std::endl;
+    // one "x y" pair per line: x_k = x_start + k * step
+    long long x = global::x_start;
+    for (double y : global::results) {
+        of << x << ' ' << y << '\n';
+        x += global::step;
+    }
+    if (!of) {
+        std::cout << "Error while writing to file " << param << std::endl;
+        wait();
+        return false;
+    }
+    std::cout << "Your results are written successfully" << std::endl;
     wait();
     return true;
-}
-auto input_from_file(const char* param) -> void {
-    std::ifstream ifs(param);
-    if (!ifs) {
-        std::cout << "Could not read file " << param << '\n';
-        wait();
-        return;
-    }
-    int x_start, x_end, step, n;
-    if (!(ifs >> x_start >> x_end >> step >> n)) {
-        std::cout << "Invalid file format. Expected: "
-                  << "x_start x_end step n\n";
-        wait();
-        return;
-    }
-    if (step == 0 ||
-        (step > 0 && x_start > x_end) ||
-        (step < 0 && x_start < x_end) ||
-        n < 2) {
-        std::cout << "Invalid parameter values\n";
-        wait();
-        return;
-    }
-    std::string extra;
-    if (ifs >> extra) {
-        std::cout << "Too many values in input file\n";
-        wait();
-        return;
-    }
-    global::x_start = x_start;
-    global::x_end = x_end;
-    global::step = step;
-    global::n = n;
-
-    std::cout << "Parameters loaded successfully\n";
-    wait();
 }
 auto read_input_file(const char* param) -> bool {
     std::ifstream ifs(param);
@@ -237,8 +218,10 @@ auto take_input() -> bool {
             case 0:
                 return false;
             case 1:
-                std::cout << "Enter file path(0 to cancel): ";
-                std::getline(std::cin >> std::ws, param);
+                if (param.empty()) {
+                    std::cout << "Enter file path(0 to cancel): ";
+                    if (!std::getline(std::cin, param)) return false;
+                }
                 if (param == "0") {
                     std::cout << "You've canceled input from file\n";
                     wait();
@@ -266,12 +249,13 @@ auto take_input() -> bool {
     return false;
 }
 auto enter() -> void {
-    while (true) {
+    while (std::cin) {
         if (global::x_start == global::null || global::x_end == global::null || global::step == global::null || global::n == global::null) {
             if (!take_input()) return;
         }
         render("Algorithm calculator v1.0", "main menu", {"Calculate algorithm", "output to file", "Step-by-step result"}, true);
         auto [choice, param] = account_choice();
+        if (!std::cin) return;
         switch (choice) {
             case 0:
                 return;
@@ -288,6 +272,7 @@ auto enter() -> void {
                     (global::step < 0 && global::x_start < global::x_end)) {
                     std::cout << "Invalid parameters; enter them again.\n";
                     global::x_start = global::x_end = global::step = global::n = global::null;
+                    wait();
                     break;
                 }
                 global::results = calculate(global::x_start, global::x_end, global::step, global::n);
@@ -295,6 +280,8 @@ auto enter() -> void {
                     ? std::nan("")
                     : global::results.back();
                 std::cout << "Calculated!" << std::endl;
+                // keep the printed results visible: the menu clears the screen
+                wait();
                 break;
             } case 2: {
                 if (std::isnan(global::calc_result)) {
@@ -302,13 +289,14 @@ auto enter() -> void {
                     wait();
                     break;
                 }
-                std::cout << "File path to output: (0 to cancell): ";
-                std::string f_path;
-                std::cin >> f_path;
-                if (f_path == "0") {
+                if (param.empty()) {
+                    std::cout << "File path to output (0 to cancel): ";
+                    if (!std::getline(std::cin, param)) return;
+                }
+                if (param == "0" || param.empty()) {
                     break;
                 }
-                output_to_file(f_path.c_str());
+                output_to_file(param.c_str());
                 break;
             }
             case 3: {

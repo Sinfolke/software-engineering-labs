@@ -5,7 +5,7 @@
     .. --main menu-- ..
     0: Exit program
     1: Calculate algorithm
-    2: File io settings
+    2: output to file
     3: Step-by-step result
     --
     Your choice: [ 1 ]
