@@ -1,3 +1,7 @@
+#pragma once
+#include <cctype>
+#include <cstddef>
+#include <utility>
 #include <iostream>
 #include <charconv>
 #include <limits>
