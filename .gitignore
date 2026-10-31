@@ -7,3 +7,5 @@ cmake-build-*/
 *.exe
 *.out
 *.log
+.~*
+~$*
