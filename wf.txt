@@ -1,0 +1,50 @@
++------------------------------------+
+|  === Algorithm Calculator v1.0 === |
+|                                    |
+|  -- Input Your Data --             |
+|  0: Exit program                   |
+|  1: Input from file                |
+|  2: Input from console             |
++------------------------------------+
+                  |
+          [ Choice 2 ]
+                  |
+                  v
++------------------------------------+
+|  === Console Data Entry ===        |
+|                                    |
+|  Input 'step'                      |
+|  [Must not be zero]: 2             |
+|  Input 'n'                         |
+|  [Must be in range [2, inf)]: 4    |
+|  Input 'x_start'                   |
+|  [Must be lower than x_end]: 0     |
+|  Input 'x_end'                     |
+|  [Must be higher than x_start]: 15 |
++------------------------------------+
+                  |
+           [ Data Entered ]
+                  |
+                  v
++------------------------------------+
+|  === Algorithm Calculator v1.0 === |
+|                                    |
+|  -- Main Menu --                   |
+|  0: Exit program                   |
+|  1: Calculate algorithm            |
+|  2: Output to file                 |
+|  3: New input                      |
++------------------------------------+
+        |              |             |
+   [ Choice 1 ]   [ Choice 2 ]   [ Choice 3 ]
+        |              |             |
+        v              v             v
++----------------+ +----------------+ +---------------------+
+| === New Input ===| | === Output to | | === New Input      |
+| Input 'new     | |                |  goto Input Your Data |
+|   value': [   ]| | [ Saving...]   |                       |
+|                | | Data exported! |                       |
+|  [ Submit ]    | |                |                       |
+|                | | [enter to      |                       |
+|                | |  continue]     |                       |
++----------------+ +----------------+ +---------------------+

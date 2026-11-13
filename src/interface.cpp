@@ -180,34 +180,65 @@ auto output_to_file(const char* param) -> bool {
 auto read_input_file(const char* param) -> bool {
     std::ifstream ifs(param);
     if (!ifs) {
-        std::cout << "Could not read file " << param << '\n';
+        std::cout << "Could not read file '" << param << "': check that it exists and you have permission\n";
         wait();
         return false;
     }
-    int x_start, x_end, step, n;
-    if (!(ifs >> x_start >> x_end >> step >> n)) {
-        std::cout << "Invalid file format. Expected: x_start x_end step n\n";
+    static constexpr std::array<const char*, 4> names{"x_start", "x_end", "step", "n"};
+    std::array<int, 4> v{};
+    std::string tok;
+    bool ok = true;
+    for (std::size_t i = 0; i < 4; ++i) {
+        if (!(ifs >> tok)) {
+            std::cout << "Error: file has only " << i << " of 4 values; missing '" << names[i]
+                      << "'. Expected: x_start x_end step n\n";
+            ok = false;
+            break;
+        }
+        const char* b = tok.data();
+        const char* e = b + tok.size();
+        auto [ptr, ec] = std::from_chars(b, e, v[i]);
+        if (ec == std::errc::result_out_of_range) {
+            std::cout << "Error: value " << (i + 1) << " ('" << tok << "') for '" << names[i]
+                      << "' is out of integer range\n";
+            ok = false;
+        } else if (ec != std::errc{} || ptr != e) {
+            std::cout << "Error: value " << (i + 1) << " ('" << tok << "') for '" << names[i]
+                      << "' is not a valid integer\n";
+            ok = false;
+        }
+    }
+    if (ok && (ifs >> tok)) {
+        std::cout << "Error: unexpected extra value '" << tok << "' after the 4 expected values\n";
+        ok = false;
+    }
+    if (ok) {
+        const auto [x_start, x_end, step, n] = v;
+        if (step == 0) {
+            std::cout << "Error: 'step' (value 3) must not be 0\n";
+            ok = false;
+        } else if (step > 0 && x_start > x_end) {
+            std::cout << "Error: step is positive (" << step << ") but x_start (" << x_start
+                      << ") > x_end (" << x_end << "); x_start must be <= x_end\n";
+            ok = false;
+        } else if (step < 0 && x_start < x_end) {
+            std::cout << "Error: step is negative (" << step << ") but x_start (" << x_start
+                      << ") < x_end (" << x_end << "); x_start must be >= x_end\n";
+            ok = false;
+        }
+        if (n < 2) {
+            std::cout << "Error: 'n' (value 4) is " << n << " but must be at least 2\n";
+            ok = false;
+        }
+    }
+    if (!ok) {
         wait();
         return false;
     }
-    if (step == 0 ||
-        (step > 0 && x_start > x_end) ||
-        (step < 0 && x_start < x_end) ||
-        n < 2) {
-        std::cout << "Invalid parameter values\n";
-        wait();
-        return false;
-    }
-    std::string extra;
-    if (ifs >> extra) {
-        std::cout << "Too many values in input file\n";
-        wait();
-        return false;
-    }
-    global::x_start = x_start;
-    global::x_end = x_end;
-    global::step = step;
-    global::n = n;
+    global::x_start = v[0];
+    global::x_end = v[1];
+    global::step = v[2];
+    global::n = v[3];
     return true;
 }
 auto take_input() -> bool {
@@ -253,7 +284,7 @@ auto enter() -> void {
         if (global::x_start == global::null || global::x_end == global::null || global::step == global::null || global::n == global::null) {
             if (!take_input()) return;
         }
-        render("Algorithm calculator v1.0", "main menu", {"Calculate algorithm", "output to file", "Step-by-step result"}, true);
+        render("Algorithm calculator v1.0", "main menu", {"Calculate algorithm", "output to file", "New input"}, true);
         auto [choice, param] = account_choice();
         if (!std::cin) return;
         switch (choice) {
@@ -299,14 +330,9 @@ auto enter() -> void {
                 output_to_file(param.c_str());
                 break;
             }
-            case 3: {
-                std::size_t i = 1;
-                for (auto step : global::results) {
-                    std::cout << i++ << ": " << step << std::endl;
-                }
-                wait();
+            case 3:
+                if (!take_input()) return;
                 break;
-            }
             default:
                 std::cout << "Invalid choice" << std::endl;
                 wait();

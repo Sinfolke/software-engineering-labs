@@ -4,6 +4,7 @@
 #include <tuple>
 #include <vector>
 #include "corelib.h"
+// Hi
 auto input_loop() -> std::tuple<int, int, int, int> {
     auto null = std::numeric_limits<int>::max();
     int x_start = null,
@@ -12,7 +13,7 @@ auto input_loop() -> std::tuple<int, int, int, int> {
         n = null;
 
     while (std::cin) {
-        if (step == null || step == 0) {
+        if (step == null || step <= 0) {
             gather_v("step", step, "Must not be zero");
             if (!std::cin) return {x_start, x_end, step, n};
             if (step == std::numeric_limits<int>::max()) step = null;
